@@ -1,0 +1,23 @@
+{
+  "name": "nodeflair",
+  "version": "1.0.0",
+  "description": "A dating web application for software developers",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node src/app.js"
+  },
+  "keywords": [
+    "nodejs",
+    "javascript",
+    "mern",
+    "react",
+    "mongodb",
+    "mongoose",
+    "express"
+  ],
+  "author": "Muzammil Momin",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
