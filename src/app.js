@@ -14,7 +14,7 @@ app.post('/signup', async (req, res) => {
         res.status(200).json({message:'new user created'})
     } catch (error) {
         console.log(error.message);
-        res.status(400).json({Error: 'User already exist'})
+        res.status(400).json({'Something went wrong': error.message})
     }
 });
 
@@ -29,7 +29,7 @@ app.get("/feed", async (req, res) => {
     }
 });
 
-app.post("/profile", async (req, res) => {
+app.post("/user", async (req, res) => {
     try {
         const user = await UserModel.findOne({_id: req.body.userId})
         res.status(200).json({data: user})
@@ -39,7 +39,7 @@ app.post("/profile", async (req, res) => {
     }
 });
 
-app.delete('/profile', async (req, res) => {
+app.delete('/user', async (req, res) => {
     try {
         const user = await UserModel.findOneAndDelete({_id: req.body.userId});
         res.status(200).json({message: `${user.firstName} deleted successfully`})
@@ -48,12 +48,21 @@ app.delete('/profile', async (req, res) => {
     }
 });
 
-app.patch('/profile', async (req, res) => {
+app.patch('/user/:userId', async (req, res) => {
+
     try {
-        const updatedUser = await UserModel.findByIdAndUpdate(req.body.userId, req.body, {returnDocument:"after"});
+        const ALLOWED_FIELDS = ['skills', 'image', 'gender', 'bio', 'password']
+    
+        const isUpdateAllowed = Object.keys(req.body).every(f => ALLOWED_FIELDS.includes(f))
+    
+        if (!isUpdateAllowed) {
+            throw new Error("update not allowed");
+        }
+
+        const updatedUser = await UserModel.findByIdAndUpdate(req.params?.userId, req.body, {returnDocument:"after", runValidators: true});
         res.status(200).json({message:'user updated succesfully', data: updatedUser});
     } catch (error) {
-        res.status(400).json({Error: error.message});
+        res.status(400).json('update failed ' + error.message);
     }
 })
 
