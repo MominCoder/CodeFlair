@@ -3,20 +3,53 @@ const {connectDB} = require('./config/database');
 const { UserModel } = require('./models/user');
 
 const app = express();
-app.use(express.json())
+app.use(express.json());
 
-app.post('/signup', async (req, res) => {    
-    try {
-        const user = new UserModel(req.body);
+const validator = require('validator');
+const bcrypt = require('bcrypt');
+
+app.post('/signup', async (req, res) => {  
+    try {        
+        validateSignupData(req);
+
+        const {firstName, lastName, emailId, password} = req.body;
+
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const user = new UserModel({...req.body, password: passwordHash});
         await user.save();
 
-        console.log('user saved into db');
         res.status(200).json({message:'new user created'})
     } catch (error) {
-        console.log(error.message);
         res.status(400).json({'Error': error.message})
     }
 });
+
+app.post('/login', async (req, res) => {
+    try {
+        const {emailId, password} = req.body;
+
+        if (!validator.isEmail(emailId)) {
+            throw new Error("Invalid email address");
+        } else {
+            const user = await UserModel.findOne({emailId});
+
+            if (!user) {
+                throw new Error("Invalid credential");
+            }          
+
+            const isValidPassword = await bcrypt.compare(password, user.password);
+
+            if (isValidPassword) {
+                res.status(200).json({message: 'Login successful'})
+            } else {
+                throw new Error("Invalid credential");
+            }
+        }
+    } catch (error) {
+        res.status(400).json({'Error': 'Login failed due to '+error.message})
+    }
+})
 
 app.get("/feed", async (req, res) => {
     try {
@@ -68,7 +101,7 @@ app.patch('/user/:userId', async (req, res) => {
     } catch (error) {        
         res.status(400).json({Error: error.message});
     }
-})
+});
 
 connectDB()
   .then(() => {

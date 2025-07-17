@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema({
         validate(value){
             if (!validator.isAlpha(value)) {
                 throw new Error("only alphabets allowed");
-                
             }
         }
     },
@@ -23,8 +22,7 @@ const userSchema = new mongoose.Schema({
         trim:true,
         validate(value){
             if (!validator.isAlpha(value)) {
-                throw new Error("only alphabets allowed");
-                
+                throw new Error("only alphabets allowed");    
             }
         }
     },
