@@ -1,27 +1,38 @@
 const express = require('express');
 const {connectDB} = require('./config/database');
-const { UserModel } = require('./models/user');
-
 const app = express();
-app.use(express.json());
 
+const { UserModel } = require('./models/user');
+const {validateSignupData} = require("./utils/validation")
 const validator = require('validator');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+
+app.use(express.json());
+app.use(cookieParser())
+
 
 app.post('/signup', async (req, res) => {  
     try {        
         validateSignupData(req);
-
+        
         const {firstName, lastName, emailId, password} = req.body;
+
+        const userExist = await UserModel.findOne({emailId})
+        
+        if (userExist) {
+            return res.status(400).json({message:'user already exist'})
+        }
 
         const passwordHash = await bcrypt.hash(password, 10);
 
         const user = new UserModel({...req.body, password: passwordHash});
         await user.save();
 
-        res.status(200).json({message:'new user created'})
+        return res.status(200).json({message:'new user created'})
     } catch (error) {
-        res.status(400).json({'Error': error.message})
+        return res.status(400).json({'Error': error.message})
     }
 });
 
@@ -30,7 +41,7 @@ app.post('/login', async (req, res) => {
         const {emailId, password} = req.body;
 
         if (!validator.isEmail(emailId)) {
-            throw new Error("Invalid email address");
+            throw new Error("Invalid email addreturn ress");
         } else {
             const user = await UserModel.findOne({emailId});
 
@@ -41,43 +52,73 @@ app.post('/login', async (req, res) => {
             const isValidPassword = await bcrypt.compare(password, user.password);
 
             if (isValidPassword) {
-                res.status(200).json({message: 'Login successful'})
+
+                const token = jwt.sign({_id:user._id}, 'namasteNodeDev');
+                res.cookie('token', token)
+                return res.status(200).json({message: 'Login successful'})
             } else {
                 throw new Error("Invalid credential");
             }
         }
     } catch (error) {
-        res.status(400).json({'Error': 'Login failed due to '+error.message})
+        return res.status(400).json({'Error': 'Login failed due to '+error.message})
     }
+})
+
+app.get('/profile', async (req, res) => {
+    try {
+        
+    } catch (error) {
+        return res.status(400).json({Error: error.message})
+    }
+    const cookies = req.cookies;
+
+    const {token} = cookies;
+
+    if (!token) {
+        throw new Error("Invalid token");
+    }
+
+    const decodedData = jwt.verify(token, 'namasteNodeDev');
+    
+    const _id = decodedData._id;
+
+    const user = await UserModel.findById(_id);
+
+    if (!user) {
+        throw new Error("Please login");
+    }   
+
+    return res.status(200).json({message: user?.firstName})
 })
 
 app.get("/feed", async (req, res) => {
     try {
         // const user = new UserModel(req.body);
         const allUsers = await UserModel.find({});        
-        res.status(200).json({data: allUsers})
+        return res.status(200).json({data: allUsers})
     } catch (error) {
         console.log(error.message);
-        res.status(400).json({Error: error.message})
+        return res.status(400).json({Error: error.message})
     }
 });
 
 app.post("/user", async (req, res) => {
     try {
         const user = await UserModel.findOne({_id: req.body.userId})
-        res.status(200).json({data: user})
+        return res.status(200).json({data: user})
     } catch (error) {
         console.log(error.message);
-        res.status(400).json({Error: 'user not found'})
+        return res.status(400).json({Error: 'user not found'})
     }
 });
 
 app.delete('/user', async (req, res) => {
     try {
         const user = await UserModel.findOneAndDelete({_id: req.body.userId});
-        res.status(200).json({message: `${user.firstName} deleted successfully`})
+        return res.status(200).json({message: `${user.firstName} deleted successfully`})
     } catch (error) {
-        res.status(400).json({Error: 'user not found'})   
+        return res.status(400).json({Error: 'user not found'})   
     }
 });
 
@@ -97,9 +138,9 @@ app.patch('/user/:userId', async (req, res) => {
         }
 
         const updatedUser = await UserModel.findByIdAndUpdate(req.params?.userId, req.body, {returnDocument:"after", runValidators: true});
-        res.status(200).json({message:'user updated succesfully', data: updatedUser});
+        return res.status(200).json({message:'user updated succesfully', data: updatedUser});
     } catch (error) {        
-        res.status(400).json({Error: error.message});
+        return res.status(400).json({Error: error.message});
     }
 });
 
