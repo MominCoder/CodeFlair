@@ -14,7 +14,7 @@ app.post('/signup', async (req, res) => {
         res.status(200).json({message:'new user created'})
     } catch (error) {
         console.log(error.message);
-        res.status(400).json({'Something went wrong': error.message})
+        res.status(400).json({'Error': error.message})
     }
 });
 
@@ -58,11 +58,15 @@ app.patch('/user/:userId', async (req, res) => {
         if (!isUpdateAllowed) {
             throw new Error("update not allowed");
         }
+        
+        if (req.body?.skills?.length > 3) {
+            throw new Error("maximum 3 skills allowed");
+        }
 
         const updatedUser = await UserModel.findByIdAndUpdate(req.params?.userId, req.body, {returnDocument:"after", runValidators: true});
         res.status(200).json({message:'user updated succesfully', data: updatedUser});
-    } catch (error) {
-        res.status(400).json('update failed ' + error.message);
+    } catch (error) {        
+        res.status(400).json({Error: error.message});
     }
 })
 
