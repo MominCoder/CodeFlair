@@ -8,6 +8,7 @@ const validator = require('validator');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+const {userAuth} = require('./middlewares/auth');
 
 app.use(express.json());
 app.use(cookieParser())
@@ -53,7 +54,7 @@ app.post('/login', async (req, res) => {
 
             if (isValidPassword) {
 
-                const token = jwt.sign({_id:user._id}, 'namasteNodeDev');
+                const token = jwt.sign({_id:user._id}, 'namasteNodeDev', {expiresIn: '1d'});
                 res.cookie('token', token)
                 return res.status(200).json({message: 'Login successful'})
             } else {
@@ -65,31 +66,13 @@ app.post('/login', async (req, res) => {
     }
 })
 
-app.get('/profile', async (req, res) => {
+app.get('/profile', userAuth, async (req, res) => {
     try {
-        
+        const user = req.user;
+        return res.status(200).json({message: user?.firstName})
     } catch (error) {
         return res.status(400).json({Error: error.message})
     }
-    const cookies = req.cookies;
-
-    const {token} = cookies;
-
-    if (!token) {
-        throw new Error("Invalid token");
-    }
-
-    const decodedData = jwt.verify(token, 'namasteNodeDev');
-    
-    const _id = decodedData._id;
-
-    const user = await UserModel.findById(_id);
-
-    if (!user) {
-        throw new Error("Please login");
-    }   
-
-    return res.status(200).json({message: user?.firstName})
 })
 
 app.get("/feed", async (req, res) => {
@@ -98,7 +81,6 @@ app.get("/feed", async (req, res) => {
         const allUsers = await UserModel.find({});        
         return res.status(200).json({data: allUsers})
     } catch (error) {
-        console.log(error.message);
         return res.status(400).json({Error: error.message})
     }
 });
@@ -108,7 +90,6 @@ app.post("/user", async (req, res) => {
         const user = await UserModel.findOne({_id: req.body.userId})
         return res.status(200).json({data: user})
     } catch (error) {
-        console.log(error.message);
         return res.status(400).json({Error: 'user not found'})
     }
 });
