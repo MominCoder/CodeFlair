@@ -42,7 +42,7 @@ app.post('/login', async (req, res) => {
         const {emailId, password} = req.body;
 
         if (!validator.isEmail(emailId)) {
-            throw new Error("Invalid email addreturn ress");
+            throw new Error("Invalid email address");
         } else {
             const user = await UserModel.findOne({emailId});
 
@@ -50,12 +50,11 @@ app.post('/login', async (req, res) => {
                 throw new Error("Invalid credential");
             }          
 
-            const isValidPassword = await bcrypt.compare(password, user.password);
+            const isValidPassword = await user.validatePassword(password)
 
             if (isValidPassword) {
-
-                const token = jwt.sign({_id:user._id}, 'namasteNodeDev', {expiresIn: '1d'});
-                res.cookie('token', token)
+                const token = user.getJWT();
+                res.cookie('token', token);
                 return res.status(200).json({message: 'Login successful'})
             } else {
                 throw new Error("Invalid credential");
@@ -68,8 +67,17 @@ app.post('/login', async (req, res) => {
 
 app.get('/profile', userAuth, async (req, res) => {
     try {
-        const user = req.user;
-        return res.status(200).json({message: user?.firstName})
+        const user = req.user;        
+
+        return res.status(200).json({data: {
+           firstName: user?.firstName,
+           lastName: user.lastName,
+           age: user.age,
+           gender:user.gender,
+           skills: user.skills,
+           imageURL: user.imageURL,
+           bio: user.bio
+        }})
     } catch (error) {
         return res.status(400).json({Error: error.message})
     }
@@ -85,14 +93,14 @@ app.get("/feed", async (req, res) => {
     }
 });
 
-app.post("/user", async (req, res) => {
-    try {
-        const user = await UserModel.findOne({_id: req.body.userId})
-        return res.status(200).json({data: user})
-    } catch (error) {
-        return res.status(400).json({Error: 'user not found'})
-    }
-});
+// app.post("/user", async (req, res) => {
+//     try {
+//         const user = await UserModel.findOne({_id: req.body.userId})
+//         return res.status(200).json({data: user})
+//     } catch (error) {
+//         return res.status(400).json({Error: 'user not found'})
+//     }
+// });
 
 app.delete('/user', async (req, res) => {
     try {
@@ -103,7 +111,7 @@ app.delete('/user', async (req, res) => {
     }
 });
 
-app.patch('/user/:userId', async (req, res) => {
+app.patch('/user', userAuth, async (req, res) => {
 
     try {
         const ALLOWED_FIELDS = ['skills', 'image', 'gender', 'bio', 'password']
@@ -118,7 +126,9 @@ app.patch('/user/:userId', async (req, res) => {
             throw new Error("maximum 3 skills allowed");
         }
 
-        const updatedUser = await UserModel.findByIdAndUpdate(req.params?.userId, req.body, {returnDocument:"after", runValidators: true});
+        const user = req.user;
+
+        const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body, {returnDocument:"after", runValidators: true});
         return res.status(200).json({message:'user updated succesfully', data: updatedUser});
     } catch (error) {        
         return res.status(400).json({Error: error.message});
