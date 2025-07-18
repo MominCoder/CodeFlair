@@ -3,9 +3,6 @@ const {connectDB} = require('./config/database');
 const app = express();
 
 const { UserModel } = require('./models/user');
-const {validateSignupData} = require("./utils/validation")
-const validator = require('validator');
-const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const {userAuth} = require('./middlewares/auth');
@@ -13,75 +10,11 @@ const {userAuth} = require('./middlewares/auth');
 app.use(express.json());
 app.use(cookieParser())
 
+const authRouter = require('./router/auth')
+const profileRouter = require('./router/profile')
 
-app.post('/signup', async (req, res) => {  
-    try {        
-        validateSignupData(req);
-        
-        const {firstName, lastName, emailId, password} = req.body;
-
-        const userExist = await UserModel.findOne({emailId})
-        
-        if (userExist) {
-            return res.status(400).json({message:'user already exist'})
-        }
-
-        const passwordHash = await bcrypt.hash(password, 10);
-
-        const user = new UserModel({...req.body, password: passwordHash});
-        await user.save();
-
-        return res.status(200).json({message:'new user created'})
-    } catch (error) {
-        return res.status(400).json({'Error': error.message})
-    }
-});
-
-app.post('/login', async (req, res) => {
-    try {
-        const {emailId, password} = req.body;
-
-        if (!validator.isEmail(emailId)) {
-            throw new Error("Invalid email address");
-        } else {
-            const user = await UserModel.findOne({emailId});
-
-            if (!user) {
-                throw new Error("Invalid credential");
-            }          
-
-            const isValidPassword = await user.validatePassword(password)
-
-            if (isValidPassword) {
-                const token = user.getJWT();
-                res.cookie('token', token);
-                return res.status(200).json({message: 'Login successful'})
-            } else {
-                throw new Error("Invalid credential");
-            }
-        }
-    } catch (error) {
-        return res.status(400).json({'Error': 'Login failed due to '+error.message})
-    }
-})
-
-app.get('/profile', userAuth, async (req, res) => {
-    try {
-        const user = req.user;        
-
-        return res.status(200).json({data: {
-           firstName: user?.firstName,
-           lastName: user.lastName,
-           age: user.age,
-           gender:user.gender,
-           skills: user.skills,
-           imageURL: user.imageURL,
-           bio: user.bio
-        }})
-    } catch (error) {
-        return res.status(400).json({Error: error.message})
-    }
-})
+app.use('/', authRouter)
+app.use('/', profileRouter)
 
 app.get("/feed", async (req, res) => {
     try {
