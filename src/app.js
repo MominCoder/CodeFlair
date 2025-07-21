@@ -44,29 +44,29 @@ app.delete('/user', async (req, res) => {
     }
 });
 
-app.patch('/user', userAuth, async (req, res) => {
+// app.patch('/user', userAuth, async (req, res) => {
 
-    try {
-        const ALLOWED_FIELDS = ['skills', 'image', 'gender', 'bio', 'password']
+//     try {
+//         const ALLOWED_FIELDS = ['skills', 'image', 'gender', 'bio', 'password']
     
-        const isUpdateAllowed = Object.keys(req.body).every(f => ALLOWED_FIELDS.includes(f))
+//         const isUpdateAllowed = Object.keys(req.body).every(f => ALLOWED_FIELDS.includes(f))
     
-        if (!isUpdateAllowed) {
-            throw new Error("update not allowed");
-        }
+//         if (!isUpdateAllowed) {
+//             throw new Error("update not allowed");
+//         }
         
-        if (req.body?.skills?.length > 3) {
-            throw new Error("maximum 3 skills allowed");
-        }
+        // if (req.body?.skills?.length > 3) {
+        //     throw new Error("maximum 3 skills allowed");
+        // }
 
-        const user = req.user;
+//         const user = req.user;
 
-        const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body, {returnDocument:"after", runValidators: true});
-        return res.status(200).json({message:'user updated succesfully', data: updatedUser});
-    } catch (error) {        
-        return res.status(400).json({Error: error.message});
-    }
-});
+//         const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body, {returnDocument:"after", runValidators: true});
+//         return res.status(200).json({message:'user updated succesfully', data: updatedUser});
+//     } catch (error) {        
+//         return res.status(400).json({Error: error.message});
+//     }
+// });
 
 connectDB()
   .then(() => {

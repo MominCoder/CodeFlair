@@ -64,7 +64,12 @@ const userSchema = new mongoose.Schema({
         }
     },
     skills:{
-        type:[String]
+        type:[String],
+        validate(value){            
+            if (value.length > 3) {
+                throw new Error("maximum 3 skills allowed");
+            }
+        }
     },
     imageURL:{
         type: String,
