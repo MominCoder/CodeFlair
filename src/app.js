@@ -13,20 +13,12 @@ app.use(cookieParser())
 const authRouter = require('./router/auth')
 const profileRouter = require('./router/profile')
 const requestRouter = require('./router/request')
+const userRouter = require('./router/user')
 
 app.use('/', authRouter)
 app.use('/', profileRouter)
 app.use('/', requestRouter)
-
-app.get("/feed", async (req, res) => {
-    try {
-        // const user = new UserModel(req.body);
-        const allUsers = await UserModel.find({});        
-        return res.status(200).json({data: allUsers})
-    } catch (error) {
-        return res.status(400).json({Error: error.message})
-    }
-});
+app.use('/', userRouter)
 
 app.delete('/user', async (req, res) => {
     try {
