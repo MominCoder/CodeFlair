@@ -30,9 +30,13 @@ router.post('/request/send/:status/:toUserId', userAuth, async (req, res) => {
             ]
         })        
 
-        if (existingConnectionRequest && existingConnectionRequest.status !== 'accepted') {
+        if (existingConnectionRequest && existingConnectionRequest.status === 'interested') {
             throw new Error("Connection request already sent");
-        }else{
+        }
+        else if (existingConnectionRequest && (existingConnectionRequest.status === 'ignored' || existingConnectionRequest.status === 'rejected')) {
+            throw new Error("blocked by user");
+        }
+        else if(existingConnectionRequest){
             throw new Error("already a match");
         }
 
@@ -79,6 +83,6 @@ router.post('/request/review/:status/:requestId', userAuth, async (req, res) => 
     } catch (error) {
         return res.status(400).json({Error: error.message})
     }
-})
+});
 
 module.exports = router
