@@ -12,9 +12,11 @@ app.use(cookieParser())
 
 const authRouter = require('./router/auth')
 const profileRouter = require('./router/profile')
+const requestRouter = require('./router/request')
 
 app.use('/', authRouter)
 app.use('/', profileRouter)
+app.use('/', requestRouter)
 
 app.get("/feed", async (req, res) => {
     try {
@@ -26,15 +28,6 @@ app.get("/feed", async (req, res) => {
     }
 });
 
-// app.post("/user", async (req, res) => {
-//     try {
-//         const user = await UserModel.findOne({_id: req.body.userId})
-//         return res.status(200).json({data: user})
-//     } catch (error) {
-//         return res.status(400).json({Error: 'user not found'})
-//     }
-// });
-
 app.delete('/user', async (req, res) => {
     try {
         const user = await UserModel.findOneAndDelete({_id: req.body.userId});
@@ -43,30 +36,6 @@ app.delete('/user', async (req, res) => {
         return res.status(400).json({Error: 'user not found'})   
     }
 });
-
-// app.patch('/user', userAuth, async (req, res) => {
-
-//     try {
-//         const ALLOWED_FIELDS = ['skills', 'image', 'gender', 'bio', 'password']
-    
-//         const isUpdateAllowed = Object.keys(req.body).every(f => ALLOWED_FIELDS.includes(f))
-    
-//         if (!isUpdateAllowed) {
-//             throw new Error("update not allowed");
-//         }
-        
-        // if (req.body?.skills?.length > 3) {
-        //     throw new Error("maximum 3 skills allowed");
-        // }
-
-//         const user = req.user;
-
-//         const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body, {returnDocument:"after", runValidators: true});
-//         return res.status(200).json({message:'user updated succesfully', data: updatedUser});
-//     } catch (error) {        
-//         return res.status(400).json({Error: error.message});
-//     }
-// });
 
 connectDB()
   .then(() => {
