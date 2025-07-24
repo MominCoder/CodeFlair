@@ -43,13 +43,13 @@ router.post('/login', async (req, res) => {
             if (isValidPassword) {
                 const token = user.getJWT();
                 res.cookie('token', token);
-                return res.status(200).json({message: 'Login successful'})
+                return res.status(200).send(user)
             } else {
                 throw new Error("Invalid credential");
             }
         }
     } catch (error) {
-        return res.status(400).json({'Error': 'Login failed due to '+error.message})
+        return res.status(400).json({'Error': 'Login failed due to '+ error.message})
     }
 });
 
