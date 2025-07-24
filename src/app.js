@@ -1,19 +1,23 @@
 const express = require('express');
 const {connectDB} = require('./config/database');
+var cors = require('cors')
 const app = express();
 
 const { UserModel } = require('./models/user');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-const {userAuth} = require('./middlewares/auth');
 
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser())
 
-const authRouter = require('./router/auth')
-const profileRouter = require('./router/profile')
-const requestRouter = require('./router/request')
-const userRouter = require('./router/user')
+const authRouter = require('./routes/auth')
+const profileRouter = require('./routes/profile')
+const requestRouter = require('./routes/request')
+const userRouter = require('./routes/user')
 
 app.use('/', authRouter)
 app.use('/', profileRouter)
