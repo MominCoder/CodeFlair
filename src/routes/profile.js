@@ -3,19 +3,11 @@ const router = express.Router();
 const {userAuth} = require('../middlewares/auth');
 const { validateEditProfileData } = require('../utils/validation');
 
-router.get('/profile', userAuth, async (req, res) => {
+router.get('/profile/view', userAuth, async (req, res) => {
     try {
         const user = req.user;        
 
-        return res.status(200).json({data: {
-           firstName: user?.firstName,
-           lastName: user.lastName,
-           age: user.age,
-           gender:user.gender,
-           skills: user.skills,
-           imageURL: user.imageURL,
-           bio: user.bio
-        }})
+        return res.status(200).json(user)
     } catch (error) {
         return res.status(400).json({Error: error.message})
     }

@@ -5,7 +5,6 @@ const app = express();
 
 const { UserModel } = require('./models/user');
 const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
 
 app.use(cors({
     origin: 'http://localhost:5173',

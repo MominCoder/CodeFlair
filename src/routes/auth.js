@@ -49,7 +49,7 @@ router.post('/login', async (req, res) => {
             }
         }
     } catch (error) {
-        return res.status(400).json({'Error': 'Login failed due to '+ error.message})
+        return res.status(400).json({'Error': error.message})
     }
 });
 
