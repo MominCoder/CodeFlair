@@ -78,11 +78,11 @@ router.get('/feed', userAuth, async (req, res) => {
         const users = await UserModel.find({
             _id: { $nin: Array.from(connectedUserIds) }
         })
-        .select(USER_SAFE_DATA)
+        // .select(USER_SAFE_DATA)
         .skip(skip)
         .limit(limit)
 
-        return res.status(200).json({data: users})
+        return res.status(200).send(users)
 
     } catch (error) {
         return res.status(400).json({Error: error.message})
