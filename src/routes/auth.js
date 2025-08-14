@@ -10,7 +10,7 @@ router.post("/signup", async (req, res) => {
   try {
     validateSignupData(req);
 
-    const { emailId, password } = req.body;
+    const { emailId, password } = req.body;    
 
     const userExist = await UserModel.findOne({ emailId });
 

@@ -10,7 +10,7 @@ const userAuth = async (req, res, next) => {
             return res.status(401).json({Error: 'Please login'})
         }
     
-        const decodedObj = jwt.verify(token, 'namasteNodeDev', {expiresIn: '1d'});
+        const decodedObj = jwt.verify(token, process.env.JWT_SECRET, {expiresIn: '1d'});
     
         const _id = decodedObj._id;
         

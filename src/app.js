@@ -1,6 +1,8 @@
 const express = require('express');
 const {connectDB} = require('./config/database');
 var cors = require('cors')
+
+require('dotenv').config()
 const app = express();
 
 const { UserModel } = require('./models/user');
@@ -35,7 +37,7 @@ app.delete('/user', async (req, res) => {
 connectDB()
   .then(() => {
     console.log('database connected');
-    app.listen(3000, () => {
+    app.listen(process.env.PORT, () => {
         console.log(`server listening on port 3000`)
     });
 })
